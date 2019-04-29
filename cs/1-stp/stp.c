@@ -216,9 +216,13 @@ static void stp_handle_config_packet(stp_t *stp, stp_port_t *p,
 		int j;
 		for(j=0;j<stp->nports;j++){
 			if(!stp_port_is_designated(&stp->ports[j])){
-				//if(comparePP(&stp->ports[j],))
-				//stp->ports[j].designated_switch = stp->switch_id;
-				//stp->ports[j].designated_port = stp->ports[j].port_id;
+				if(comparePM(&stp->ports[j],config)){
+					stp->ports[j].designated_switch = stp->switch_id;
+					stp->ports[j].designated_port = stp->ports[j].port_id;
+
+					stp->ports[j].designated_root = stp->designated_root;
+					stp->ports[j].designated_cost = stp->root_path_cost;
+				}
 			}
 			else{
 				stp->ports[j].designated_root = stp->designated_root;
