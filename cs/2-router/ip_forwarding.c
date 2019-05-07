@@ -13,6 +13,11 @@
 // iface_send_packet_by_arp
 void ip_forward_packet(u32 ip_dst, char *packet, int len)
 {
+	struct iphdr *ip = packet_to_ip_hdr(packet);
+	if(ip_checksum(ip) != ip->checksum || ip->ttl <= 1){
+		ip_send_packet
+	}
+	dst_entry = longest_prefix_match(ip_dst);
 	fprintf(stderr, "TODO: forward ip packet.\n");
 }
 

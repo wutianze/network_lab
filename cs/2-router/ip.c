@@ -30,8 +30,21 @@ void ip_init_hdr(struct iphdr *ip, u32 saddr, u32 daddr, u16 len, u8 proto)
 // the input address is in host byte order
 rt_entry_t *longest_prefix_match(u32 dst)
 {
+	struct list_head *head = &rtable,*tmp;
+	int tmp_long = 0;
+	rt_entry_t* res = NULL;
+	while(head->next != head){
+		tmp = head->next;
+		rt_entry_t *entry = list_entry(tmp, rt_entry_t, list);
+		if((entry->dest & entry->mask) == (dst & mask)){
+			if(entry->mask > tmp_long){
+				res = entry;
+				tmp_long = entry->mask;
+			}
+		}
+	}	
 	fprintf(stderr, "TODO: longest prefix match for the packet.\n");
-	return NULL;
+	return res;
 }
 
 // send IP packet

@@ -53,6 +53,19 @@ void arpcache_destroy()
 // and mac address with the given arguments
 int arpcache_lookup(u32 ip4, u8 mac[ETH_ALEN])
 {
+	pthread_mutex_lock(&arpcache.lock);
+	int i=0;
+	for(;i<MAX_ARP_SIZE;i++){
+		if(arpcache.entries[i].ip4 == ip4 && arpcache.entries[i].valid == 1){
+			int j=0;
+			for(;j<ETH_ALEN;j++){
+				mac[j] = arpcache.entries[i].mac[j];
+			}
+			pthread_mutex_unlock(&arpcache.lock);
+			return 1;
+		}
+	}
+	pthread_mutex_unlock(&arpcache.lock);
 	fprintf(stderr, "TODO: lookup ip address in arp cache.\n");
 	return 0;
 }
