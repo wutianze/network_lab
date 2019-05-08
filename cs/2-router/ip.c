@@ -53,5 +53,21 @@ rt_entry_t *longest_prefix_match(u32 dst)
 // router itself. This function is used to send ICMP packets.
 void ip_send_packet(char *packet, int len)
 {
+	struct ether_header* eH = (struct ether_header*)packet;
+	eH->ether_type = htons(ETH_P_IP);
+	memcpy(eh->ether_shost,entry->iface->mac,ETH_ALEN);
+	struct ipH = (struct iphdr*)(packet+ETHER_HDR_SIZE);
+	rt_entry_t * e = longest_prefix_match(ntohl(ipH->daddr));
+	if(e == NULL){
+		fprintf(stderr,"Send Fail");
+		return;
+	}
+	u32 nH = e->gw;
+	if(nH == 0){
+		nH = ntohl(ipH->daddr);
+	}
+	ipH->saddr = htonl(e->iface->ip);
+	memcpy(eh->ether_shost,e->iface->mac,ETH_ALEN);
+	iface_send_packet_by_arp(e->iface,nH,packet,len);
 	fprintf(stderr, "TODO: send ip packet.\n");
 }
