@@ -82,7 +82,7 @@ void arpcache_append_packet(iface_info_t *iface, u32 ip4, char *packet, int len)
 	pthread_mutex_lock(&arpcache.lock);
 	struct arp_req *e,*n;
 	list_for_each_entry_safe(e,n,&(arpcache.req_list),list){
-		if(*(e->iface) == *iface && e->ip4 == ip4){
+		if((e->iface)->ip == iface->ip && e->ip4 == ip4){
 			//if already has a same req,then add to its waiting packets
 			struct cached_pkt*newP = (struct cached_pkt*)malloc(sizeof(struct cached_pkt));
 			newP->packet = packet;
@@ -145,12 +145,12 @@ void arpcache_insert(u32 ip4, u8 mac[ETH_ALEN])
 		if(ip4 == e->ip4){
 			struct cached_pkt *pe,*pn;
 			list_for_each_entry_safe(pe,pn,&(arpcache.req_list),list){
-				struct ether_header* eH = (struct ether_header*)packet;
+				struct ether_header* eH = (struct ether_header*)(pe->packet);
 				memcpy(eH->ether_dhost,mac,ETH_ALEN);
-				iface_send_packet(req_entry->iface,pe->packet,pe->len);
-				list_delete_entry(&(pe->list))
+				iface_send_packet(e->iface,pe->packet,pe->len);
+				list_delete_entry(&(pe->list));
 			}
-		list_delete_entry(&(req_entry->list));
+		list_delete_entry(&(e->list));
 		}
 	}
 	fprintf(stderr, "TODO: insert ip->mac entry, and send all the pending packets.\n");
@@ -190,7 +190,7 @@ void *arpcache_sweep(void *arg)
 					icmp_send_packet(pe->packet,pe->len,3,1);
 					list_delete_entry(&(pe->list));
 				}
-				list_delete_entry(&(req_entry->list));
+				list_delete_entry(&(e->list));
 			}
 		}
 	}

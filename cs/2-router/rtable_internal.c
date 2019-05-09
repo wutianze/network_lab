@@ -114,7 +114,8 @@ static int parse_routing_info(char *buf, int len)
 	init_list_head(&rtable);
 
 	// Outer loop: Iterate all the NETLINK headers
-	for (struct nlmsghdr *nlp = (struct nlmsghdr *)buf;
+	struct nlmsghdr*nlp = (struct nlmsghdr*)buf;
+	for (;
 			NLMSG_OK(nlp, len); nlp = NLMSG_NEXT(nlp, len)) {
 		// get route entry header
 		struct rtmsg *rtp = (struct rtmsg *)NLMSG_DATA(nlp);

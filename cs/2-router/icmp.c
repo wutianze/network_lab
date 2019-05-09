@@ -35,7 +35,8 @@ void icmp_send_packet(const char *in_pkt, int len, u8 type, u8 code)
                 struct icmphdr* icmpHS = (struct icmphdr*)(packetSend + ETHER_HDR_SIZE + IP_HDR_SIZE(ipH));
                 eHS->ether_type = htons(ETH_P_IP);
 		memcpy(eHS->ether_dhost,eH->ether_shost,ETH_ALEN);
-                ip_init_hdr(ipHS,ntohl(ipH->daddr),u32 0,sendL - ETHER_HDR_SIZE, IPPROTO_ICMP);
+                u32 tmpS = 0;
+		ip_init_hdr(ipHS,ntohl(ipH->daddr),tmpS,sendL - ETHER_HDR_SIZE, IPPROTO_ICMP);
 		//the source ip will be initialized in ip_send_packet
 
 		icmpH->type = type;

@@ -21,7 +21,7 @@ void arp_send_request(iface_info_t *iface, u32 dst_ip)
 	memcpy(eH->ether_shost, iface->mac, ETH_ALEN);
 	int i=0;
 	for(; i < ETH_ALEN; i++){
-		 eH->ether_dhost[i] = u8(255);
+		 eH->ether_dhost[i] = 255;
 	}
 	eH->ether_type = htons(ETH_P_ARP);
 
@@ -30,7 +30,7 @@ void arp_send_request(iface_info_t *iface, u32 dst_ip)
 	eA->arp_pro = htons(0x0800);
 	eA->arp_hln = 6;
 	eA->arp_pln = 4;
-	eA->arp_op = htons(ETH_REQUEST);
+	eA->arp_op = htons(ARPOP_REQUEST);
 	memcpy(eA->arp_sha, iface->mac, ETH_ALEN);
 	eA->arp_spa = htonl(iface->ip);
 	eA->arp_tpa = htonl(dst_ip);
