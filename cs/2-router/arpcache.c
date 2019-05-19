@@ -53,6 +53,8 @@ void arpcache_destroy()
 // and mac address with the given arguments
 int arpcache_lookup(u32 ip4, u8 mac[ETH_ALEN])
 {
+	fprintf(stderr,"arpcache_lookup,ip4:%x\n",ip4);
+	
 	pthread_mutex_lock(&arpcache.lock);
 	int i=0;
 	for(;i<MAX_ARP_SIZE;i++){
@@ -62,6 +64,7 @@ int arpcache_lookup(u32 ip4, u8 mac[ETH_ALEN])
 				mac[j] = arpcache.entries[i].mac[j];
 			}
 			pthread_mutex_unlock(&arpcache.lock);
+			fprintf(stderr,"find one\n");
 			return 1;
 		}
 	}
@@ -79,11 +82,14 @@ int arpcache_lookup(u32 ip4, u8 mac[ETH_ALEN])
 // with the given IP address and iface, append the packet, and send arp request.
 void arpcache_append_packet(iface_info_t *iface, u32 ip4, char *packet, int len)
 {
+	fprintf(stderr,"arpcache_append_packet,ip4:%x\n",ip4);
 	pthread_mutex_lock(&arpcache.lock);
 	struct arp_req *e,*n;
 	list_for_each_entry_safe(e,n,&(arpcache.req_list),list){
+		fprintf(stderr,"e->iface:%x,iface->ip:%x\n",(e->iface)->ip,iface->ip);
 		if((e->iface)->ip == iface->ip && e->ip4 == ip4){
 			//if already has a same req,then add to its waiting packets
+			fprintf(stderr,"already has a same req\n");
 			struct cached_pkt*newP = (struct cached_pkt*)malloc(sizeof(struct cached_pkt));
 			newP->packet = packet;
 			newP->len = len;
@@ -118,6 +124,8 @@ void arpcache_append_packet(iface_info_t *iface, u32 ip4, char *packet, int len)
 // them out
 void arpcache_insert(u32 ip4, u8 mac[ETH_ALEN])
 {
+	
+	fprintf(stderr, "TODO: insert ip->mac entry, and send all the pending packets.\n");
 	int i=0;
 	for(;i<MAX_ARP_SIZE;i++){
 		if(arpcache.entries[i].valid == 0){
@@ -139,10 +147,11 @@ void arpcache_insert(u32 ip4, u8 mac[ETH_ALEN])
 		arpcache.entries[r].valid = 1;
 		pthread_mutex_unlock(&arpcache.lock);
 	}
-	//then handle pending packets
+	fprintf(stderr,"then handle pending packets");
 	struct arp_req *e,*n;
 	list_for_each_entry_safe(e,n,&(arpcache.req_list),list){
 		if(ip4 == e->ip4){
+			fprintf(stderr,"ip4:%x\n",ip4);
 			struct cached_pkt *pe,*pn;
 			list_for_each_entry_safe(pe,pn,&(arpcache.req_list),list){
 				struct ether_header* eH = (struct ether_header*)(pe->packet);
@@ -153,7 +162,6 @@ void arpcache_insert(u32 ip4, u8 mac[ETH_ALEN])
 		list_delete_entry(&(e->list));
 		}
 	}
-	fprintf(stderr, "TODO: insert ip->mac entry, and send all the pending packets.\n");
 }
 
 // sweep arpcache periodically

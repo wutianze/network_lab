@@ -13,8 +13,10 @@
 // iface_send_packet_by_arp
 void ip_forward_packet(u32 ip_dst, char *packet, int len)
 {
+
+	fprintf(stderr, "TODO: forward ip packet.\n");
 	struct iphdr *ip = packet_to_ip_hdr(packet);
-	rt_entry_t* e = longest_prefix_match(ip->daddr);
+	rt_entry_t* e = longest_prefix_match(ntohl(ip->daddr));
 	if(e == NULL){
 		icmp_send_packet(packet,len,ICMP_DEST_UNREACH,ICMP_ECHOREPLY);
 		free(packet);
@@ -33,7 +35,6 @@ void ip_forward_packet(u32 ip_dst, char *packet, int len)
 		nH = ntohl(ip->daddr);
 	}
 	iface_send_packet_by_arp(e->iface,nH,packet,len);
-	fprintf(stderr, "TODO: forward ip packet.\n");
 }
 
 // handle ip packet
@@ -45,6 +46,8 @@ void handle_ip_packet(iface_info_t *iface, char *packet, int len)
 {
 	struct iphdr *ip = packet_to_ip_hdr(packet);
 	u32 daddr = ntohl(ip->daddr);
+	
+	fprintf(stderr,"handle_ip_packet,daddr:%x,iface->ip:%x\n",daddr,iface->ip);
 	struct icmphdr* checkIcmp = (struct imcphdr*)(packet + ETHER_HDR_SIZE + IP_HDR_SIZE(ip));
 	if (daddr == iface->ip && checkIcmp->type == ICMP_ECHOREQUEST){
 		icmp_send_packet(packet,len,0,0);
@@ -52,6 +55,7 @@ void handle_ip_packet(iface_info_t *iface, char *packet, int len)
 		free(packet);
 	}
 	else {
+		fprintf(stderr,"ip_forward_packet");
 		ip_forward_packet(daddr, packet, len);
 	}
 }

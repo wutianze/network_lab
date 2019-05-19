@@ -39,7 +39,8 @@ if __name__ == '__main__':
     r1.cmd('./scripts/disable_arp.sh')
     r1.cmd('./scripts/disable_icmp.sh')
     r1.cmd('./scripts/disable_ip_forward.sh')
-
+    
+    print "set ok"
     net.start()
     CLI(net)
     net.stop()

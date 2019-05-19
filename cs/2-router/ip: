@@ -1,0 +1,45 @@
+ip.c:69:	memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
+ip.c:75:	ipH->saddr = htonl(e->iface->ip);
+ip.c:76:	fprintf(stderr,"e->iface->ip:%x\n",e->iface->ip);
+ip.c:77:	memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
+Binary file router matches
+Binary file libipstack.a matches
+Binary file arp.o matches
+arp.c:23:	memcpy(eH->ether_shost, iface->mac, ETH_ALEN);
+arp.c:36:	memcpy(eA->arp_sha, iface->mac, ETH_ALEN);
+arp.c:37:	eA->arp_spa = htonl(iface->ip);
+arp.c:52:	memcpy(eH->ether_shost, iface->mac, ETH_ALEN);
+arp.c:60:	eA->arp_spa = htonl(iface->ip);
+arp.c:62:	memcpy(eA->arp_sha,iface->mac,ETH_ALEN);
+arp.c:74:	fprintf(stderr,"arp_op:%d,arp+tpa:%d,iface->ip:%d\n",eA->arp_op,eA->arp_tpa,iface->ip);
+arp.c:77:		if(ntohl(eA->arp_tpa) == iface->ip){
+arp.c:78:			fprintf(stderr,"arp_tpa == iface->ip:%d\n",iface->ip);
+arp.c:85:		if(ntohl(eA->arp_tpa) == iface->ip){
+arp.c:86:			fprintf(stderr,"iface->ip:%d",iface->ip);
+arp.c:103:	memcpy(eh->ether_shost, iface->mac, ETH_ALEN);
+packet.c:18:	addr.sll_ifindex = iface->index;
+packet.c:24:	if (sendto(iface->fd, packet, len, 0, (const struct sockaddr *)&addr,
+Binary file ip_forwarding.o matches
+Binary file .arp.c.swp matches
+main.c:29:		if (iface->fd == fd)
+main.c:45:	// 		iface->name, len, ntohs(eh->ether_type));
+main.c:112:	int fd = open_device(iface->name);
+main.c:114:	iface->fd = fd;
+main.c:118:	strcpy(ifr.ifr_name, iface->name);
+main.c:121:	iface->index = ifr.ifr_ifindex;
+main.c:124:	memcpy(&iface->mac, ifr.ifr_hwaddr.sa_data, sizeof(iface->mac));
+main.c:133:	iface->ip = ntohl(*(u32 *)&ip);
+main.c:134:	strcpy(iface->ip_str, inet_ntoa(ip));
+main.c:142:	iface->mask = ntohl(*(u32 *)&mask);
+main.c:161:			init_list_head(&iface->list);
+main.c:162:			strcpy(iface->name, addr->ifa_name);
+main.c:164:			list_add_tail(&iface->list, &instance->iface_list);
+main.c:179:		sprintf(dev_names + strlen(dev_names), " %s", iface->name);
+rtable_internal.c:51:		if (strcmp(iface->name, if_name) == 0)
+ip_forwarding.c:32:	memcpy(((struct ether_header*)packet)->ether_shost, e->iface->mac,ETH_ALEN);
+ip_forwarding.c:50:	fprintf(stderr,"handle_ip_packet,daddr:%x,iface->ip:%x\n",daddr,iface->ip);
+ip_forwarding.c:52:	if (daddr == iface->ip && checkIcmp->type == ICMP_ECHOREQUEST){
+arpcache.c:89:		fprintf(stderr,"e->iface:%x,iface->ip:%x\n",(e->iface)->ip,iface->ip);
+arpcache.c:90:		if((e->iface)->ip == iface->ip && e->ip4 == ip4){
+Binary file ip.o matches
+rtable.c:25:	strcpy(entry->if_name, iface->name);

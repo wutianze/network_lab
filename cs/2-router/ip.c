@@ -30,20 +30,22 @@ void ip_init_hdr(struct iphdr *ip, u32 saddr, u32 daddr, u16 len, u8 proto)
 // the input address is in host byte order
 rt_entry_t *longest_prefix_match(u32 dst)
 {
-	struct list_head *head = &rtable,*tmp;
-	int tmp_long = 0;
+	//print_rtable();	
+	fprintf(stderr, "TODO: longest prefix match for the packet.dst:%x\n",dst);
+	u32 tmp_long = 0;
 	rt_entry_t* res = NULL;
-	while(head->next != head){
-		tmp = head->next;
-		rt_entry_t *entry = list_entry(tmp, rt_entry_t, list);
-		if((entry->dest & entry->mask) == (dst & entry->mask)){
-			if(entry->mask > tmp_long){
-				res = entry;
-				tmp_long = entry->mask;
+	rt_entry_t* tmp = NULL;
+	list_for_each_entry(tmp,&rtable,list){
+		fprintf(stderr,"tmp->dest:%x\n",tmp->dest);
+		if((tmp->dest & tmp->mask) == (dst & tmp->mask)){
+			if(tmp->mask > tmp_long){
+				res = tmp;
+				tmp_long = tmp->mask;
+				fprintf(stderr,"tmp_long:%u\n",tmp_long);
 			}
 		}
-	}	
-	fprintf(stderr, "TODO: longest prefix match for the packet.\n");
+	}
+	fprintf(stderr,"res\n");
 	return res;
 }
 
@@ -53,21 +55,25 @@ rt_entry_t *longest_prefix_match(u32 dst)
 // router itself. This function is used to send ICMP packets.
 void ip_send_packet(char *packet, int len)
 {
+	
+	fprintf(stderr, "TODO: send ip packet.\n");
 	struct ether_header* eH = (struct ether_header*)packet;
 	eH->ether_type = htons(ETH_P_IP);
 	struct iphdr* ipH = (struct iphdr*)(packet+ETHER_HDR_SIZE);
-	rt_entry_t * e = longest_prefix_match(ntohl(ipH->daddr));
+	rt_entry_t * e = longest_prefix_match(ipH->daddr);
 	if(e == NULL){
-		fprintf(stderr,"Send Fail");
+		fprintf(stderr,"Send Fail\n");
+		free(packet);
 		return;
 	}
 	memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
 	u32 nH = e->gw;
+	fprintf(stderr,"nH:%x\n",nH);
 	if(nH == 0){
 		nH = ntohl(ipH->daddr);
 	}
 	ipH->saddr = htonl(e->iface->ip);
+	fprintf(stderr,"e->iface->ip:%x\n",e->iface->ip);
 	memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
 	iface_send_packet_by_arp(e->iface,nH,packet,len);
-	fprintf(stderr, "TODO: send ip packet.\n");
 }

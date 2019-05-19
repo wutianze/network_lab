@@ -10,6 +10,7 @@
 // send icmp packet
 void icmp_send_packet(const char *in_pkt, int len, u8 type, u8 code)
 {
+	fprintf(stderr,"icmp_send_packet\n");
 	char* packetSend;
 	struct ether_header* eH = (struct ether_header*)in_pkt;
 	struct iphdr* ipH = (struct iphdr*)(in_pkt + ETHER_HDR_SIZE);

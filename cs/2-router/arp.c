@@ -15,6 +15,8 @@
 // iface_send_packet
 void arp_send_request(iface_info_t *iface, u32 dst_ip)
 {
+	
+	fprintf(stderr, "TODO: send arp request when lookup failed in arpcache.dst_ip:%x\n",dst_ip);
 	char* packet;
 	packet = (char*)malloc(ETHER_HDR_SIZE + sizeof(struct ether_arp));
 	struct ether_header* eH = (struct ether_header*)(packet);
@@ -36,7 +38,6 @@ void arp_send_request(iface_info_t *iface, u32 dst_ip)
 	eA->arp_tpa = htonl(dst_ip);
 	memset(eA->arp_tha,0,ETH_ALEN);
 	iface_send_packet(iface, packet, ETHER_HDR_SIZE+sizeof(struct ether_arp));
-	fprintf(stderr, "TODO: send arp request when lookup failed in arpcache.\n");
 }
 
 // send an arp reply packet: encapsulate an arp reply packet, send it out
@@ -70,18 +71,23 @@ void handle_arp_packet(iface_info_t *iface, char *packet, int len)
 	struct ether_arp* eA;
 	eh = (struct ether_header*)(packet);
 	eA = (struct ether_arp*)(packet + ETHER_HDR_SIZE);
+	fprintf(stderr,"arp_op:%d,arp+tpa:%d,iface->ip:%d\n",eA->arp_op,eA->arp_tpa,iface->ip);
 	if(ntohs(eA->arp_op) == ARPOP_REQUEST){
+		fprintf(stderr,"handle arp request\n");
 		if(ntohl(eA->arp_tpa) == iface->ip){
+			fprintf(stderr,"arp_tpa == iface->ip:%d\n",iface->ip);
 			arp_send_reply(iface, eA);
 			arpcache_insert(ntohl(eA->arp_spa),eA->arp_sha);
 		}
 	}
 	else if(ntohs(eA->arp_op) == ARPOP_REPLY){
+		fprintf(stderr,"handle arp reply\n");
 		if(ntohl(eA->arp_tpa) == iface->ip){
+			fprintf(stderr,"iface->ip:%d",iface->ip);
 			arpcache_insert(ntohl(eA->arp_spa), eA->arp_sha);
 		}
 	}
-	//free(packet);
+	free(packet);
 	fprintf(stderr, "TODO: process arp packet: arp request & arp reply.\n");
 }
 
@@ -92,6 +98,7 @@ void handle_arp_packet(iface_info_t *iface, char *packet, int len)
 // this packet into arpcache, and send arp request.
 void iface_send_packet_by_arp(iface_info_t *iface, u32 dst_ip, char *packet, int len)
 {
+	fprintf(stderr,"iface_send_packet_by_arp,dst_ip:%x\n",dst_ip);
 	struct ether_header *eh = (struct ether_header *)packet;
 	memcpy(eh->ether_shost, iface->mac, ETH_ALEN);
 	eh->ether_type = htons(ETH_P_IP);
@@ -99,12 +106,14 @@ void iface_send_packet_by_arp(iface_info_t *iface, u32 dst_ip, char *packet, int
 	u8 dst_mac[ETH_ALEN];
 	int found = arpcache_lookup(dst_ip, dst_mac);
 	if (found) {
-		// log(DEBUG, "found the mac of %x, send this packet", dst_ip);
+		fprintf(stderr,"found\n");
+		//log(DEBUG, "found the mac of %x, send this packet", dst_ip);
 		memcpy(eh->ether_dhost, dst_mac, ETH_ALEN);
 		iface_send_packet(iface, packet, len);
 	}
 	else {
-		// log(DEBUG, "lookup %x failed, pend this packet", dst_ip);
+		fprintf(stderr,"lookup failed\n");
+		//log(DEBUG, "lookup %x failed, pend this packet", dst_ip);
 		arpcache_append_packet(iface, dst_ip, packet, len);
 	}
 }
