@@ -60,7 +60,7 @@ void ip_send_packet(char *packet, int len)
 	struct ether_header* eH = (struct ether_header*)packet;
 	eH->ether_type = htons(ETH_P_IP);
 	struct iphdr* ipH = (struct iphdr*)(packet+ETHER_HDR_SIZE);
-	rt_entry_t * e = longest_prefix_match(ipH->daddr);
+	rt_entry_t * e = longest_prefix_match(ntohl(ipH->daddr));
 	if(e == NULL){
 		fprintf(stderr,"Send Fail\n");
 		free(packet);
@@ -74,6 +74,6 @@ void ip_send_packet(char *packet, int len)
 	}
 	ipH->saddr = htonl(e->iface->ip);
 	fprintf(stderr,"e->iface->ip:%x\n",e->iface->ip);
-	memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
+	//memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
 	iface_send_packet_by_arp(e->iface,nH,packet,len);
 }
