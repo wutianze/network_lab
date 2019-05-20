@@ -4,11 +4,11 @@
 #include "packet.h"
 #include "ether.h"
 #include "arpcache.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "ip.h"
+#include "icmp.h"
 // #include "log.h"
 
 // send an arp request: encapsulate an arp request packet, send it out through
@@ -67,15 +67,17 @@ void arp_send_reply(iface_info_t *iface, struct ether_arp *req_hdr)
 
 void handle_arp_packet(iface_info_t *iface, char *packet, int len)
 {
-	struct ether_header* eh;
+	
+	fprintf(stderr, "TODO: process arp packet: arp request & arp reply.\n");
+	//struct ether_header* eh;
 	struct ether_arp* eA;
-	eh = (struct ether_header*)(packet);
+	//eh = (struct ether_header*)(packet);
 	eA = (struct ether_arp*)(packet + ETHER_HDR_SIZE);
-	fprintf(stderr,"arp_op:%d,arp+tpa:%d,iface->ip:%d\n",eA->arp_op,eA->arp_tpa,iface->ip);
+	fprintf(stderr,"arp_op:%d,arp_tpa:%x,iface->ip:%x\n",eA->arp_op,eA->arp_tpa,iface->ip);
 	if(ntohs(eA->arp_op) == ARPOP_REQUEST){
 		fprintf(stderr,"handle arp request\n");
 		if(ntohl(eA->arp_tpa) == iface->ip){
-			fprintf(stderr,"arp_tpa == iface->ip:%d\n",iface->ip);
+			fprintf(stderr,"arp_tpa == iface->ip:%x\n",iface->ip);
 			arp_send_reply(iface, eA);
 			arpcache_insert(ntohl(eA->arp_spa),eA->arp_sha);
 		}
@@ -83,12 +85,11 @@ void handle_arp_packet(iface_info_t *iface, char *packet, int len)
 	else if(ntohs(eA->arp_op) == ARPOP_REPLY){
 		fprintf(stderr,"handle arp reply\n");
 		if(ntohl(eA->arp_tpa) == iface->ip){
-			fprintf(stderr,"iface->ip:%d",iface->ip);
+			fprintf(stderr,"iface->ip:%x\n",iface->ip);
 			arpcache_insert(ntohl(eA->arp_spa), eA->arp_sha);
 		}
 	}
 	free(packet);
-	fprintf(stderr, "TODO: process arp packet: arp request & arp reply.\n");
 }
 
 // send (IP) packet through arpcache lookup 
@@ -109,6 +110,13 @@ void iface_send_packet_by_arp(iface_info_t *iface, u32 dst_ip, char *packet, int
 		fprintf(stderr,"found\n");
 		//log(DEBUG, "found the mac of %x, send this packet", dst_ip);
 		memcpy(eh->ether_dhost, dst_mac, ETH_ALEN);
+		if(ntohs(eh->ether_type) == ETH_P_IP){
+			struct iphdr* myiph= (struct iphdr*)(packet + ETHER_HDR_SIZE);
+			struct icmphdr* myicmph=(struct icmphdr*)(packet + ETHER_HDR_SIZE + IP_HDR_SIZE(myiph));
+			u32 sip = ntohl(myiph->saddr);
+			u32 dip = ntohl(myiph->daddr);
+			fprintf(stderr,"saddr:%x,daddr:%x\n,icmptype:%d,icmpcode:%d",sip,dip,myicmph->type,myicmph->code);
+		}	
 		iface_send_packet(iface, packet, len);
 	}
 	else {

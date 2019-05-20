@@ -61,6 +61,7 @@ int arpcache_lookup(u32 ip4, u8 mac[ETH_ALEN])
 		if(arpcache.entries[i].ip4 == ip4 && arpcache.entries[i].valid == 1){
 			int j=0;
 			for(;j<ETH_ALEN;j++){
+				fprintf(stderr,"lookup mac[%d]=%d\n",j,arpcache.entries[i].mac[j]);
 				mac[j] = arpcache.entries[i].mac[j];
 			}
 			pthread_mutex_unlock(&arpcache.lock);
@@ -124,7 +125,10 @@ void arpcache_append_packet(iface_info_t *iface, u32 ip4, char *packet, int len)
 // them out
 void arpcache_insert(u32 ip4, u8 mac[ETH_ALEN])
 {
-	
+	int mi = 0;
+	for(;mi<ETH_ALEN;mi++){
+		fprintf(stderr,"mi[%d]=%d\n",mi,mac[mi]);
+	}
 	fprintf(stderr, "TODO: insert ip->mac entry, and send all the pending packets.\n");
 	int i=0;
 	for(;i<MAX_ARP_SIZE;i++){
@@ -148,15 +152,18 @@ void arpcache_insert(u32 ip4, u8 mac[ETH_ALEN])
 		pthread_mutex_unlock(&arpcache.lock);
 	}
 	fprintf(stderr,"then handle pending packets\n");
-	struct arp_req *e,*n;
+	struct arp_req *e=NULL,*n;
 	list_for_each_entry_safe(e,n,&(arpcache.req_list),list){
 		if(ip4 == e->ip4){
 			fprintf(stderr,"ip4:%x\n",ip4);
-			struct cached_pkt *pe,*pn;
+			struct cached_pkt *pe=NULL,*pn;
 			list_for_each_entry_safe(pe,pn,&(e->cached_packets),list){
-				struct ether_header* eH = (struct ether_header*)(pe->packet);
+				char* pS = pe->packet;
+				int len = pe->len;
+				struct ether_header* eH = (struct ether_header*)(pS);
 				memcpy(eH->ether_dhost,mac,ETH_ALEN);
-				iface_send_packet(e->iface,pe->packet,pe->len);
+				fprintf(stderr,"iface_send in insert\n");
+				iface_send_packet(e->iface,pS,len);
 				list_delete_entry(&(pe->list));
 			}
 		list_delete_entry(&(e->list));

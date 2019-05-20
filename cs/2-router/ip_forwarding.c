@@ -18,12 +18,15 @@ void ip_forward_packet(u32 ip_dst, char *packet, int len)
 	struct iphdr *ip = packet_to_ip_hdr(packet);
 	rt_entry_t* e = longest_prefix_match(ntohl(ip->daddr));
 	if(e == NULL){
+		fprintf(stderr,"ip_forward,send ICMP_DEST_UNREACH\n");
 		icmp_send_packet(packet,len,ICMP_DEST_UNREACH,ICMP_ECHOREPLY);
 		free(packet);
 		return;
 	}
 	ip->ttl -=1;
 	if(ip->ttl <= 0){
+		
+		fprintf(stderr,"ip_forward,send ICMP_TIME_EXCEEDED\n");
 		icmp_send_packet(packet,len,ICMP_TIME_EXCEEDED,ICMP_ECHOREPLY);
 		free(packet);
 		return;
