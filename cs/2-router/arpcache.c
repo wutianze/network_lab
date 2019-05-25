@@ -4,6 +4,8 @@
 #include "packet.h"
 #include "icmp.h"
 
+#include "ip.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -162,7 +164,13 @@ void arpcache_insert(u32 ip4, u8 mac[ETH_ALEN])
 				int len = pe->len;
 				struct ether_header* eH = (struct ether_header*)(pS);
 				memcpy(eH->ether_dhost,mac,ETH_ALEN);
-				fprintf(stderr,"iface_send in insert\n");
+				struct iphdr* deIp = (struct iphdr*)(pS + ETHER_HDR_SIZE);
+				
+				fprintf(stderr,"iface_send in insert,ipsaddr:%x,ipdaddr:%x\n",deIp->saddr,deIp->daddr);
+				if(ntohs(eH->ether_type) == ETH_P_IP){
+					struct icmphdr* icmpH = (struct icmphdr*)(pS + ETHER_HDR_SIZE + IP_HDR_SIZE(deIp));
+					fprintf(stderr,"iface_send in insert,icmptype:%d,icmpcode:%d\n",icmpH->type,icmpH->code);
+	}
 				iface_send_packet(e->iface,pS,len);
 				list_delete_entry(&(pe->list));
 			}

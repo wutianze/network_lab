@@ -57,8 +57,8 @@ void ip_send_packet(char *packet, int len)
 {
 	
 	fprintf(stderr, "TODO: send ip packet.\n");
-	struct ether_header* eH = (struct ether_header*)packet;
-	eH->ether_type = htons(ETH_P_IP);
+	//struct ether_header* eH = (struct ether_header*)packet;
+	//eH->ether_type = htons(ETH_P_IP);
 	struct iphdr* ipH = (struct iphdr*)(packet+ETHER_HDR_SIZE);
 	rt_entry_t * e = longest_prefix_match(ntohl(ipH->daddr));
 	if(e == NULL){
@@ -66,7 +66,7 @@ void ip_send_packet(char *packet, int len)
 		free(packet);
 		return;
 	}
-	memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
+	//memcpy(eH->ether_shost,e->iface->mac,ETH_ALEN);
 	u32 nH = e->gw;
 	fprintf(stderr,"nH:%x\n",nH);
 	if(nH == 0){
