@@ -198,6 +198,7 @@ void *arpcache_sweep(void *arg)
 		for(;i<MAX_ARP_SIZE;i++){
 			if(arpcache.entries[i].valid == 1 && nowT-arpcache.entries[i].added >= 15){
 				arpcache.entries[i].valid = 0;
+				arpcache.entries[i].ip4 = 0;
 			}
 		}
 		struct arp_req *e,*n;
@@ -213,8 +214,8 @@ void *arpcache_sweep(void *arg)
 				list_for_each_entry_safe(pe,pn,&(e->cached_packets),list){
 					pthread_mutex_unlock(&arpcache.lock);
 					icmp_send_packet(pe->packet,pe->len,3,1);
-					list_delete_entry(&(pe->list));
 					pthread_mutex_lock(&arpcache.lock);
+					list_delete_entry(&(pe->list));
 				}
 				list_delete_entry(&(e->list));
 			}
